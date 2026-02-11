@@ -1,43 +1,573 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tyche: Ashen Iron</title>
-<style>
-body {
-  margin:0;
-  background: linear-gradient(180deg,#000,#120020);
-  color:#e8d7ff;
-  font-family:system-ui;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  height:100vh;
-}
-button {
-  padding:15px 25px;
-  border-radius:15px;
-  background:#8a3dff;
-  color:white;
-  border:none;
-  font-weight:bold;
-  font-size:16px;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tyche: Ashen Iron</title>
+
+  <!-- Chart.js (for progress charts) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --bg0:#000;
+      --bg1:#0a0713;
+      --card: rgba(10,10,18,.78);
+      --border: rgba(138,61,255,.35);
+      --text:#e8d7ff;
+      --muted: rgba(231,215,255,.7);
+      --accent:#8a3dff;
+      --accent2:#c084fc;
+      --danger:#b00020;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 800px at 50% 0%, #140021 0%, var(--bg1) 40%, var(--bg0) 100%);
+      color: var(--text);
+    }
+    .container{max-width:430px; margin:0 auto; padding:14px; min-height:100vh;}
+    .title{font-size:22px; font-weight:900; text-align:center; letter-spacing:.6px; margin:6px 0 10px;}
+    .nav{display:flex; gap:8px; justify-content:center; flex-wrap:wrap;}
+    .btn{
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.35);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      font-weight:800;
+      font-size:13px;
+    }
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(138,61,255,.35), rgba(138,61,255,.12));
+      border-color: rgba(138,61,255,.7);
+    }
+    .btn:active{transform:scale(.98)}
+    .card{
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:14px;
+      box-shadow: 0 0 28px rgba(138,61,255,.18);
+      margin-top:10px;
+    }
+    .row{display:flex; gap:10px; align-items:center; justify-content:space-between;}
+    .stack{display:flex; flex-direction:column; gap:10px;}
+    .label{font-size:12px; color:var(--muted); font-weight:700;}
+    input, select{
+      width:100%;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(183,140,255,.25);
+      background: rgba(0,0,0,.35);
+      color: var(--text);
+      outline:none;
+    }
+    .pill{
+      font-size:11px; font-weight:900; padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(183,140,255,.25); color: rgba(231,215,255,.85);
+      background: rgba(0,0,0,.25);
+    }
+    .muted{color:var(--muted); font-size:12px;}
+    .quote{margin-top:8px; font-style:italic; color: rgba(192,132,252,.95);}
+    .divider{height:1px; background: rgba(183,140,255,.14); margin:10px 0;}
+    .list{display:flex; flex-direction:column; gap:10px;}
+    .item{padding:12px; border-radius:16px; border:1px solid rgba(183,140,255,.18); background: rgba(0,0,0,.28);}
+    .item .t{font-weight:900;}
+    .item .m{font-size:12px; color:var(--muted); margin-top:2px;}
+    .item .v{font-size:12px; margin-top:4px;}
+    .toast{
+      position:fixed; left:50%; transform:translateX(-50%);
+      bottom:18px; z-index:50;
+      background: rgba(0,0,0,.82);
+      border:1px solid rgba(138,61,255,.55);
+      padding:10px 12px; border-radius:14px;
+      box-shadow:0 0 30px rgba(138,61,255,.25);
+      font-weight:900;
+      max-width: 92vw;
+      text-align:center;
+    }
+    .danger{color:#ff6b7a;}
+  </style>
 </head>
+
 <body>
-<h1>🔥 Tyche: Ashen Iron</h1>
-<p>Dark Fantasy Gym Tracker</p>
-<p id="souls">Souls: 0</p>
-<button onclick="gainSouls()">Log Workout (+100 Souls)</button>
+  <div class="container">
+    <div class="title">🔥 Tyche: Ashen Iron</div>
+
+    <div class="nav">
+      <button class="btn primary" id="tabLog">Log</button>
+      <button class="btn" id="tabProgress">Progress</button>
+      <button class="btn" id="tabBody">Bodyweight</button>
+      <button class="btn" id="tabSave">Save</button>
+    </div>
+
+    <!-- BONFIRE -->
+    <div class="card">
+      <div class="row">
+        <div>
+          <div style="font-weight:900; color:var(--accent2)">Bonfire Checkpoint</div>
+          <div class="muted" id="lastTrain">Last Training: Unkindled</div>
+        </div>
+        <div class="pill" id="streakPill">Streak: 0 • Best: 0</div>
+      </div>
+      <div class="quote">“Rested and ready—your strength grows with every session.”</div>
+      <div class="divider"></div>
+      <div class="row" style="gap:10px; flex-wrap:wrap; justify-content:center;">
+        <div class="pill" id="soulsPill">Souls: 0</div>
+        <div class="pill" id="setsPill">Sets: 0</div>
+        <div class="pill" id="recoveryPill">Recovery: Kindled</div>
+      </div>
+      <div class="muted" style="margin-top:10px;" id="coachLine">🗡️ Log a set to begin your run.</div>
+    </div>
+
+    <!-- LOG TAB -->
+    <div id="viewLog" class="card">
+      <div class="stack">
+        <div class="row" style="justify-content:space-between;">
+          <div style="font-weight:900; color:var(--accent2)">Log a Set</div>
+          <select id="daySelect" style="max-width:160px;">
+            <option>Upper A</option><option>Upper B</option><option>Lower A</option><option>Lower B</option>
+          </select>
+        </div>
+
+        <select id="exerciseSelect">
+          <option value="">Select Exercise</option>
+        </select>
+
+        <input id="weightInput" inputmode="decimal" placeholder="Weight (lbs)" />
+        <input id="repsInput" inputmode="numeric" placeholder="Reps" />
+
+        <button class="btn primary" id="addSetBtn">Add Set</button>
+
+        <div class="row">
+          <button class="btn" id="recoveryBtn">Recovery Ritual (+Souls)</button>
+          <button class="btn" id="clearBtn"><span class="danger">Clear All</span></button>
+        </div>
+
+        <div class="divider"></div>
+        <div style="font-weight:900; color:var(--accent2)">Recent Deeds</div>
+        <div class="muted">Last 10 sets.</div>
+        <div class="list" id="recentList"></div>
+      </div>
+    </div>
+
+    <!-- PROGRESS TAB -->
+    <div id="viewProgress" class="card" style="display:none;">
+      <div class="stack">
+        <div class="row" style="justify-content:space-between;">
+          <div style="font-weight:900; color:var(--accent2)">Weapon Mastery</div>
+          <div class="pill" id="prPill">PR e1RM: —</div>
+        </div>
+        <div class="muted">Pick an exercise, see estimated strength trend (e1RM).</div>
+
+        <select id="progressExercise">
+          <option value="">Select Exercise</option>
+        </select>
+
+        <div style="height:240px;">
+          <canvas id="chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- BODYWEIGHT TAB -->
+    <div id="viewBody" class="card" style="display:none;">
+      <div class="stack">
+        <div style="font-weight:900; color:var(--accent2)">Vessel: Bodyweight</div>
+        <input id="bwInput" inputmode="decimal" placeholder="Bodyweight (lbs)" />
+        <button class="btn primary" id="bwBtn">Log Bodyweight</button>
+
+        <div class="divider"></div>
+        <div style="font-weight:900; color:var(--accent2)">Recent Bodyweight</div>
+        <div class="list" id="bwList"></div>
+      </div>
+    </div>
+
+    <!-- SAVE TAB -->
+    <div id="viewSave" class="card" style="display:none;">
+      <div class="stack">
+        <div style="font-weight:900; color:var(--accent2)">Save (Export / Import)</div>
+        <div class="muted">This keeps your data safe if you reinstall the app.</div>
+
+        <button class="btn primary" id="exportBtn">Export Save (JSON)</button>
+
+        <label class="btn" style="text-align:center;">
+          Import Save (JSON)
+          <input type="file" id="importFile" accept="application/json" style="display:none;">
+        </label>
+
+        <div class="divider"></div>
+        <div class="muted">
+          ⚠️ Data is stored locally on this device by default. Export your save occasionally.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast" class="toast" style="display:none;"></div>
 
 <script>
-let souls = 0;
-function gainSouls(){
-  souls += 100;
-  document.getElementById("souls").innerText = "Souls: " + souls;
-}
+  // ---------- Templates ----------
+  const templates = {
+    "Upper A": ["Machine Chest Press","Incline DB Press","Seated Cable Row","Chest-Supported Row","Cable Fly","Face Pulls","Rope Triceps Pushdown"],
+    "Upper B": ["Lat Pulldown","Seated Cable Row (Alt Grip)","Chest-Supported Machine Row","Incline Machine Chest Press","Cable Fly High-Low","Rear Delt Fly","Seated Biceps Curl"],
+    "Lower A": ["Leg Press","Goblet Squat / Hack Squat","Leg Extension","Standing Calf Raise","Dead Bug"],
+    "Lower B": ["Hip Thrust","DB Romanian Deadlift","Seated Leg Curl","Reverse Lunge","Standing Calf Raise","Side Plank"]
+  };
+
+  // ---------- Storage ----------
+  const KEY = {
+    logs: "tyche_logs_v1",
+    bw: "tyche_bw_v1",
+    souls: "tyche_souls_v1",
+    streak: "tyche_streak_v1",
+    best: "tyche_best_v1",
+    last: "tyche_last_v1"
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const todayISO = () => new Date().toISOString().slice(0,10);
+
+  function loadJSON(k, fallback){
+    try { return JSON.parse(localStorage.getItem(k) || JSON.stringify(fallback)); }
+    catch { return fallback; }
+  }
+  function saveJSON(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+  function loadNum(k, fallback=0){ const n = Number(localStorage.getItem(k)); return Number.isFinite(n) ? n : fallback; }
+  function saveNum(k, v){ localStorage.setItem(k, String(v)); }
+
+  let logs = loadJSON(KEY.logs, []);
+  let bws  = loadJSON(KEY.bw, []);
+  let souls = loadNum(KEY.souls, 0);
+  let streak = loadNum(KEY.streak, 0);
+  let bestStreak = loadNum(KEY.best, 0);
+  let lastTrain = localStorage.getItem(KEY.last) || "";
+
+  // ---------- RPG math ----------
+  function e1rm(w, r){ return r <= 1 ? w : Math.round(w * (1 + r/30)); }
+  function volume(w, r){ return w * r; }
+
+  function toast(msg){
+    const t = $("toast");
+    t.textContent = msg;
+    t.style.display = "block";
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => t.style.display = "none", 2200);
+  }
+
+  function updateStreak(){
+    const t = todayISO();
+    if (!lastTrain){
+      streak = 1;
+    } else if (lastTrain === t){
+      // already counted today
+    } else {
+      const lastD = new Date(lastTrain);
+      const nowD = new Date(t);
+      const diff = Math.round((nowD - lastD)/(1000*60*60*24));
+      if (diff === 1) streak += 1;
+      else streak = 1; // motivational reset (no punishment)
+    }
+    bestStreak = Math.max(bestStreak, streak);
+    lastTrain = t;
+    saveNum(KEY.streak, streak);
+    saveNum(KEY.best, bestStreak);
+    localStorage.setItem(KEY.last, lastTrain);
+  }
+
+  function computeRecovery(){
+    // Simple fatigue proxy: last 7 days total volume
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 7);
+    const vol7 = logs
+      .filter(l => new Date(l.isoDate) >= cutoff)
+      .reduce((s,l) => s + l.vol, 0);
+
+    let fatigue = Math.min(100, Math.round((vol7 / 8000) * 100)); // tune
+    let label = "Kindled";
+    let coach = "🗡️ You are kindled. Add a rep or 5 lbs and claim souls.";
+    if (fatigue >= 80){ label = "Cursed"; coach = "🛡️ Protect the flame: go lighter, perfect reps."; }
+    else if (fatigue >= 55){ label = "Hollowing"; coach = "⚔️ Strong work. Prioritize sleep + mobility."; }
+    return { fatigue, label, coach };
+  }
+
+  // ---------- UI: templates ----------
+  function fillExercises(day){
+    const sel = $("exerciseSelect");
+    const progSel = $("progressExercise");
+
+    const list = templates[day] || [];
+    const opts = ['<option value="">Select Exercise</option>']
+      .concat(list.map(x => `<option value="${x}">${x}</option>`))
+      .join("");
+
+    sel.innerHTML = opts;
+
+    // progress dropdown should show *all* exercises ever used + templates
+    const all = new Set();
+    Object.values(templates).flat().forEach(x => all.add(x));
+    logs.forEach(l => all.add(l.exercise));
+    const opts2 = ['<option value="">Select Exercise</option>']
+      .concat([...all].sort().map(x => `<option value="${x}">${x}</option>`))
+      .join("");
+    progSel.innerHTML = opts2;
+  }
+
+  // ---------- UI: recent lists ----------
+  function renderRecent(){
+    const wrap = $("recentList");
+    wrap.innerHTML = "";
+    const slice = logs.slice(0,10);
+    if (slice.length === 0){
+      wrap.innerHTML = `<div class="muted">No sets yet. Kindle the flame.</div>`;
+      return;
+    }
+    slice.forEach(l => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="t">${l.exercise}</div>
+        <div class="m">${l.date} • ${l.day}</div>
+        <div class="v">${l.weight} lbs × ${l.reps} reps • e1RM ${l.e1rm}</div>
+      `;
+      wrap.appendChild(div);
+    });
+  }
+
+  function renderBW(){
+    const wrap = $("bwList");
+    wrap.innerHTML = "";
+    const slice = bws.slice(0,10);
+    if (slice.length === 0){
+      wrap.innerHTML = `<div class="muted">No bodyweight logs yet.</div>`;
+      return;
+    }
+    slice.forEach(x => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="t">${x.weight} lbs</div>
+        <div class="m">${x.date}</div>
+      `;
+      wrap.appendChild(div);
+    });
+  }
+
+  // ---------- Chart ----------
+  let chart;
+  function renderChart(ex){
+    const data = logs
+      .filter(l => l.exercise === ex)
+      .slice().reverse();
+
+    const labels = data.map(d => d.date);
+    const points = data.map(d => d.e1rm);
+
+    const pr = points.length ? Math.max(...points) : 0;
+    $("prPill").textContent = pr ? `PR e1RM: ${pr}` : "PR e1RM: —";
+
+    const ctx = $("chart").getContext("2d");
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label: "e1RM",
+          data: points,
+          borderWidth: 2,
+          tension: 0.25
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true }
+        },
+        scales: {
+          x: { ticks: { maxRotation: 0, autoSkip: true } }
+        }
+      }
+    });
+  }
+
+  // ---------- HUD ----------
+  function renderHUD(){
+    $("soulsPill").textContent = `Souls: ${souls}`;
+    $("setsPill").textContent = `Sets: ${logs.length}`;
+    $("lastTrain").textContent = `Last Training: ${lastTrain ? new Date(lastTrain).toLocaleDateString() : "Unkindled"}`;
+    $("streakPill").textContent = `Streak: ${streak} • Best: ${bestStreak}`;
+
+    const rec = computeRecovery();
+    $("recoveryPill").textContent = `Recovery: ${rec.label}`;
+    $("coachLine").textContent = rec.coach;
+  }
+
+  // ---------- Actions ----------
+  $("addSetBtn").addEventListener("click", () => {
+    const day = $("daySelect").value;
+    const ex = $("exerciseSelect").value;
+    const w = Number($("weightInput").value);
+    const r = Number($("repsInput").value);
+
+    if (!ex || !w || !r){
+      toast("⚠️ Pick exercise + enter weight/reps.");
+      return;
+    }
+
+    const entry = {
+      id: Date.now() + "_" + Math.random().toString(16).slice(2),
+      isoDate: todayISO(),
+      date: new Date().toLocaleDateString(),
+      day,
+      exercise: ex,
+      weight: w,
+      reps: r,
+      vol: volume(w,r),
+      e1rm: e1rm(w,r)
+    };
+
+    logs.unshift(entry);
+    saveJSON(KEY.logs, logs);
+
+    // RPG rewards
+    souls += 60 + Math.min(120, Math.round(entry.vol / 8));
+    saveNum(KEY.souls, souls);
+
+    updateStreak();
+    toast("🔥 Set logged. Souls claimed.");
+
+    $("weightInput").value = "";
+    $("repsInput").value = "";
+
+    fillExercises(day);
+    renderRecent();
+    renderHUD();
+  });
+
+  $("recoveryBtn").addEventListener("click", () => {
+    souls += 25;
+    saveNum(KEY.souls, souls);
+    toast("🛡️ Recovery ritual complete (+Souls).");
+    renderHUD();
+  });
+
+  $("bwBtn").addEventListener("click", () => {
+    const w = Number($("bwInput").value);
+    if (!w){ toast("⚠️ Enter bodyweight."); return; }
+    bws.unshift({ id: Date.now()+"", isoDate: todayISO(), date: new Date().toLocaleDateString(), weight: w });
+    saveJSON(KEY.bw, bws);
+    souls += 15;
+    saveNum(KEY.souls, souls);
+    $("bwInput").value = "";
+    toast("⚖️ Bodyweight logged.");
+    renderBW();
+    renderHUD();
+  });
+
+  $("clearBtn").addEventListener("click", () => {
+    if (!confirm("This clears ALL sets, bodyweight, Souls, streaks. Are you sure?")) return;
+    logs = []; bws = []; souls = 0; streak = 0; bestStreak = 0; lastTrain = "";
+    saveJSON(KEY.logs, logs);
+    saveJSON(KEY.bw, bws);
+    saveNum(KEY.souls, souls);
+    saveNum(KEY.streak, streak);
+    saveNum(KEY.best, bestStreak);
+    localStorage.setItem(KEY.last, "");
+    toast("🧹 Cleared. You can restart the run anytime.");
+    fillExercises($("daySelect").value);
+    renderRecent();
+    renderBW();
+    renderHUD();
+  });
+
+  // Export/Import
+  $("exportBtn").addEventListener("click", () => {
+    const payload = { logs, bws, souls, streak, bestStreak, lastTrain, exportedAt: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "tyche-ashen-iron-save.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast("📦 Save exported.");
+  });
+
+  $("importFile").addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const data = JSON.parse(String(reader.result || "{}"));
+        logs = Array.isArray(data.logs) ? data.logs : [];
+        bws = Array.isArray(data.bws) ? data.bws : [];
+        souls = Number(data.souls || 0);
+        streak = Number(data.streak || 0);
+        bestStreak = Number(data.bestStreak || 0);
+        lastTrain = String(data.lastTrain || "");
+        saveJSON(KEY.logs, logs);
+        saveJSON(KEY.bw, bws);
+        saveNum(KEY.souls, souls);
+        saveNum(KEY.streak, streak);
+        saveNum(KEY.best, bestStreak);
+        localStorage.setItem(KEY.last, lastTrain);
+        toast("🗝️ Save restored at the bonfire.");
+        fillExercises($("daySelect").value);
+        renderRecent();
+        renderBW();
+        renderHUD();
+      } catch {
+        toast("⚠️ Could not import that file.");
+      }
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  // Tabs
+  function show(tab){
+    $("viewLog").style.display = tab==="log" ? "block" : "none";
+    $("viewProgress").style.display = tab==="progress" ? "block" : "none";
+    $("viewBody").style.display = tab==="body" ? "block" : "none";
+    $("viewSave").style.display = tab==="save" ? "block" : "none";
+
+    $("tabLog").className = "btn" + (tab==="log" ? " primary":"");
+    $("tabProgress").className = "btn" + (tab==="progress" ? " primary":"");
+    $("tabBody").className = "btn" + (tab==="body" ? " primary":"");
+    $("tabSave").className = "btn" + (tab==="save" ? " primary":"");
+
+    if (tab==="progress"){
+      const ex = $("progressExercise").value || logs[0]?.exercise || "";
+      if (ex){
+        $("progressExercise").value = ex;
+        renderChart(ex);
+      }
+    }
+  }
+
+  $("tabLog").addEventListener("click", ()=>show("log"));
+  $("tabProgress").addEventListener("click", ()=>show("progress"));
+  $("tabBody").addEventListener("click", ()=>show("body"));
+  $("tabSave").addEventListener("click", ()=>show("save"));
+
+  $("daySelect").addEventListener("change", (e) => fillExercises(e.target.value));
+  $("progressExercise").addEventListener("change", (e) => {
+    const ex = e.target.value;
+    if (ex) renderChart(ex);
+  });
+
+  // Init
+  fillExercises($("daySelect").value);
+  renderRecent();
+  renderBW();
+  renderHUD();
+  show("log");
 </script>
 </body>
 </html>
