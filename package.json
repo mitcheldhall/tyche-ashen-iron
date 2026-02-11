@@ -1,0 +1,9 @@
+{
+  "name": "tyche-ashen-iron",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "echo Build handled by Vercel"
+  }
+}
