@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tyche: Ashen Iron</title>
+<style>
+body {
+  margin:0;
+  background: linear-gradient(180deg,#000,#120020);
+  color:#e8d7ff;
+  font-family:system-ui;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+}
+button {
+  padding:15px 25px;
+  border-radius:15px;
+  background:#8a3dff;
+  color:white;
+  border:none;
+  font-weight:bold;
+  font-size:16px;
+}
+</style>
+</head>
+<body>
+<h1>🔥 Tyche: Ashen Iron</h1>
+<p>Dark Fantasy Gym Tracker</p>
+<p id="souls">Souls: 0</p>
+<button onclick="gainSouls()">Log Workout (+100 Souls)</button>
+
+<script>
+let souls = 0;
+function gainSouls(){
+  souls += 100;
+  document.getElementById("souls").innerText = "Souls: " + souls;
+}
+</script>
+</body>
+</html>
