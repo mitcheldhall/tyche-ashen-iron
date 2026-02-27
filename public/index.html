@@ -4,102 +4,42 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tyche: Ashen Iron</title>
-
-  <!-- PWA -->
-  <link rel="manifest" href="/manifest.webmanifest">
-  <meta name="theme-color" content="#120020">
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <style>
     :root{
-      --bg0:#000;
-      --bg1:#0a0713;
+      --bg0:#000; --bg1:#0a0713;
       --card: rgba(10,10,18,.78);
       --border: rgba(138,61,255,.35);
-      --text:#e8d7ff;
-      --muted: rgba(231,215,255,.7);
-      --accent:#8a3dff;
-      --accent2:#c084fc;
+      --text:#e8d7ff; --muted: rgba(231,215,255,.7);
+      --accent:#8a3dff; --accent2:#c084fc;
       --danger:#ff6b7a;
-      --ok:#7CFFB2;
-      --warn:#FFD36E;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background: radial-gradient(1200px 800px at 50% 0%, #140021 0%, var(--bg1) 40%, var(--bg0) 100%);
-      color: var(--text);
-    }
-    .container{max-width:460px; margin:0 auto; padding:14px; min-height:100vh;}
-    .title{font-size:22px; font-weight:900; text-align:center; letter-spacing:.6px; margin:6px 0 10px;}
-    .nav{display:flex; gap:8px; justify-content:center; flex-wrap:wrap;}
-    .btn{
-      border:1px solid var(--border);
-      background: rgba(0,0,0,.35);
-      color: var(--text);
-      padding:10px 12px;
-      border-radius:14px;
-      font-weight:800;
-      font-size:13px;
-    }
-    .btn.primary{
-      background: linear-gradient(180deg, rgba(138,61,255,.35), rgba(138,61,255,.12));
-      border-color: rgba(138,61,255,.7);
-    }
-    .btn:active{transform:scale(.98)}
+    body{margin:0;font-family:system-ui;background:radial-gradient(1200px 800px at 50% 0%, #140021 0%, var(--bg1) 40%, var(--bg0) 100%);color:var(--text);}
+    .container{max-width:480px;margin:0 auto;padding:14px;min-height:100vh;}
+    .title{font-size:22px;font-weight:900;text-align:center;letter-spacing:.6px;margin:6px 0 10px;}
+    .nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+    .btn{border:1px solid var(--border);background:rgba(0,0,0,.35);color:var(--text);padding:10px 12px;border-radius:14px;font-weight:800;font-size:13px;}
+    .btn.primary{background:linear-gradient(180deg,rgba(138,61,255,.35),rgba(138,61,255,.12));border-color:rgba(138,61,255,.7);}
     .btn.danger{border-color: rgba(255,107,122,.55); color: var(--danger);}
-    .card{
-      background: var(--card);
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:14px;
-      box-shadow: 0 0 28px rgba(138,61,255,.18);
-      margin-top:10px;
-    }
-    .row{display:flex; gap:10px; align-items:center; justify-content:space-between;}
-    .stack{display:flex; flex-direction:column; gap:10px;}
-    input, select{
-      width:100%;
-      padding:12px;
-      border-radius:14px;
-      border:1px solid rgba(183,140,255,.25);
-      background: rgba(0,0,0,.35);
-      color: var(--text);
-      outline:none;
-    }
-    .pill{
-      font-size:11px; font-weight:900; padding:6px 10px; border-radius:999px;
-      border:1px solid rgba(183,140,255,.25); color: rgba(231,215,255,.85);
-      background: rgba(0,0,0,.25);
-      white-space:nowrap;
-    }
-    .muted{color:var(--muted); font-size:12px;}
-    .quote{margin-top:8px; font-style:italic; color: rgba(192,132,252,.95);}
-    .divider{height:1px; background: rgba(183,140,255,.14); margin:10px 0;}
-    .list{display:flex; flex-direction:column; gap:10px;}
-    .item{padding:12px; border-radius:16px; border:1px solid rgba(183,140,255,.18); background: rgba(0,0,0,.28);}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px;box-shadow:0 0 28px rgba(138,61,255,.18);margin-top:10px;}
+    .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+    .stack{display:flex;flex-direction:column;gap:10px;}
+    input,select{width:100%;padding:12px;border-radius:14px;border:1px solid rgba(183,140,255,.25);background:rgba(0,0,0,.35);color:var(--text);outline:none;}
+    .pill{font-size:11px;font-weight:900;padding:6px 10px;border-radius:999px;border:1px solid rgba(183,140,255,.25);color:rgba(231,215,255,.85);background:rgba(0,0,0,.25);white-space:nowrap;}
+    .muted{color:var(--muted);font-size:12px;}
+    .kicker{font-weight:900;color:var(--accent2)}
+    .divider{height:1px;background:rgba(183,140,255,.14);margin:10px 0;}
+    .list{display:flex;flex-direction:column;gap:10px;}
+    .item{padding:12px;border-radius:16px;border:1px solid rgba(183,140,255,.18);background:rgba(0,0,0,.28);}
     .item .t{font-weight:900;}
-    .item .m{font-size:12px; color:var(--muted); margin-top:2px;}
-    .item .v{font-size:12px; margin-top:4px;}
-    .toast{
-      position:fixed; left:50%; transform:translateX(-50%);
-      bottom:18px; z-index:50;
-      background: rgba(0,0,0,.82);
-      border:1px solid rgba(138,61,255,.55);
-      padding:10px 12px; border-radius:14px;
-      box-shadow:0 0 30px rgba(138,61,255,.25);
-      font-weight:900;
-      max-width: 92vw;
-      text-align:center;
-    }
-    .tiny{font-size:11px; color:rgba(231,215,255,.65)}
-    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-    .chipRow{display:flex; gap:8px; flex-wrap:wrap;}
-    .chip{display:flex; align-items:center; gap:8px; padding:10px; border-radius:14px; border:1px solid rgba(183,140,255,.18); background: rgba(0,0,0,.25);}
-    .check{transform: scale(1.1);}
-    .kicker{font-weight:900; color:var(--accent2)}
+    .item .m{font-size:12px;color:var(--muted);margin-top:2px;}
+    .item .v{font-size:12px;margin-top:6px;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .tiny{font-size:11px;color:rgba(231,215,255,.65)}
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:50;background:rgba(0,0,0,.82);border:1px solid rgba(138,61,255,.55);padding:10px 12px;border-radius:14px;box-shadow:0 0 30px rgba(138,61,255,.25);font-weight:900;max-width:92vw;text-align:center;display:none;}
+    .subRow{display:flex;gap:8px;align-items:center;margin-top:8px;}
+    .subRow .btn{width:110px}
+    .check{transform:scale(1.15)}
   </style>
 </head>
 
@@ -108,11 +48,9 @@
     <div class="title">🔥 Tyche: Ashen Iron</div>
 
     <div class="nav">
-      <button class="btn primary" id="tabLog">Log</button>
-      <button class="btn" id="tabNext">Next Up</button>
-      <button class="btn" id="tabProgress">Progress</button>
-      <button class="btn" id="tabBody">Bodyweight</button>
-      <button class="btn" id="tabSave">Save</button>
+      <button class="btn primary" id="tabLog" type="button">Log</button>
+      <button class="btn" id="tabPlan" type="button">Plan</button>
+      <button class="btn" id="tabSave" type="button">Save</button>
     </div>
 
     <div class="card">
@@ -123,32 +61,33 @@
         </div>
         <div class="pill" id="streakPill">Streak: 0 • Best: 0</div>
       </div>
-      <div class="quote">“Rested and ready—your strength grows with every session.”</div>
 
       <div class="divider"></div>
 
-      <div class="row" style="gap:10px; flex-wrap:wrap; justify-content:center;">
-        <div class="pill" id="soulsPill">Souls: 0</div>
+      <div class="row" style="justify-content:center;">
         <div class="pill" id="setsPill">Sets: 0</div>
-        <div class="pill" id="recoveryPill">Recovery: Kindled</div>
+        <div class="pill" id="soulsPill">Souls: 0</div>
+        <div class="pill" id="activePlanPill">Plan: —</div>
       </div>
 
-      <div class="muted" style="margin-top:10px;" id="coachLine">🗡️ Log a set to begin your run.</div>
-
       <div class="divider"></div>
+
       <div class="tiny">
-        <b>C6–7 safety note:</b> keep neck neutral, avoid straining, and stop if you get radiating pain/tingling/numbness.
+        <b>C6–7 rules:</b> neck neutral, avoid hard straining, stop if radiating pain/tingling/numbness.
+        <br><b>No deadlifts:</b> removed entirely.
       </div>
     </div>
 
-    <!-- LOG TAB -->
+    <!-- LOG -->
     <div id="viewLog" class="card">
       <div class="stack">
-        <div class="row" style="justify-content:space-between;">
+        <div class="row">
           <div class="kicker">Log a Set</div>
-          <select id="groupSelect" style="max-width:160px;">
-            <option value="Upper">Upper</option>
-            <option value="Lower">Lower</option>
+          <select id="daySelect" style="max-width:180px;">
+            <option value="Upper A">Upper A</option>
+            <option value="Upper B">Upper B</option>
+            <option value="Lower A">Lower A</option>
+            <option value="Lower B">Lower B</option>
           </select>
         </div>
 
@@ -157,111 +96,64 @@
         </select>
 
         <div class="grid2">
-          <div class="pill" id="lastWeightPill">Last: —</div>
-          <div class="pill" id="bestWeightPill">Best: —</div>
-        </div>
-
-        <div class="row" style="gap:8px;">
-          <button class="btn" id="banBtn" style="flex:1;">Hide Exercise</button>
-          <button class="btn" id="unbanBtn" style="flex:1;">Unhide All</button>
+          <div class="pill" id="lastPill">Last: —</div>
+          <div class="pill" id="bestPill">Best: —</div>
         </div>
 
         <input id="weightInput" inputmode="decimal" placeholder="Weight (lbs)" />
         <input id="repsInput" inputmode="numeric" placeholder="Reps" />
 
-        <button class="btn primary" id="addSetBtn">Add Set</button>
+        <button class="btn primary" id="addSetBtn" type="button">Add Set</button>
 
         <div class="row">
-          <button class="btn" id="recoveryBtn">Recovery Ritual</button>
-          <button class="btn danger" id="clearBtn">Clear All</button>
+          <button class="btn" id="recoveryBtn" type="button">Recovery Ritual</button>
+          <button class="btn danger" id="clearBtn" type="button">Clear All</button>
         </div>
 
         <div class="divider"></div>
         <div class="kicker">Recent Deeds</div>
-        <div class="muted">Last 10 sets.</div>
+        <div class="muted">Last 10 sets logged.</div>
         <div class="list" id="recentList"></div>
       </div>
     </div>
 
-    <!-- NEXT UP TAB -->
-    <div id="viewNext" class="card" style="display:none;">
+    <!-- PLAN -->
+    <div id="viewPlan" class="card" style="display:none;">
       <div class="stack">
-        <div class="row" style="justify-content:space-between;">
-          <div class="kicker">Next Up</div>
-          <select id="nextGroupSelect" style="max-width:160px;">
-            <option value="Upper">Upper</option>
-            <option value="Lower">Lower</option>
+        <div class="row">
+          <div class="kicker">Routine</div>
+          <select id="planSelect" style="max-width:180px;">
+            <option value="Upper A">Upper A</option>
+            <option value="Upper B">Upper B</option>
+            <option value="Lower A">Lower A</option>
+            <option value="Lower B">Lower B</option>
           </select>
         </div>
 
-        <div class="chipRow">
-          <div class="chip">
-            <input class="check" type="checkbox" id="neckSafeToggle" checked />
-            <label for="neckSafeToggle" class="muted"><b>Neck-Safe Mode</b> (hide banned moves)</label>
-          </div>
+        <div class="muted">
+          Each day is <b>6 exercises</b>. Use <b>Sub</b> if a machine is taken or you’re sore.
         </div>
 
-        <button class="btn primary" id="genNextBtn">Generate Next Workout</button>
-        <button class="btn" id="startWorkoutBtn">Start Workout (Checklist)</button>
+        <button class="btn primary" id="startPlanBtn" type="button">Start Plan (Checklist)</button>
 
         <div class="divider"></div>
-        <div class="list" id="nextList"></div>
+        <div class="kicker">Active Plan</div>
+        <div class="muted">Tap “Log this” to jump to logging with your last weight auto-filled.</div>
 
-        <div class="divider"></div>
-        <div class="kicker">Active Workout</div>
-        <div class="muted">Check off exercises as you complete them. Tap an item to jump into logging.</div>
-        <div class="list" id="activeWorkoutList"></div>
+        <div class="list" id="planList"></div>
 
         <div class="row">
-          <button class="btn" id="finishWorkoutBtn">Finish Workout</button>
-          <button class="btn danger" id="cancelWorkoutBtn">Cancel</button>
-        </div>
-
-        <div class="tiny">
-          <b>No deadlifts:</b> removed completely by design.
+          <button class="btn" id="finishPlanBtn" type="button">Finish</button>
+          <button class="btn danger" id="cancelPlanBtn" type="button">Cancel</button>
         </div>
       </div>
     </div>
 
-    <!-- PROGRESS TAB -->
-    <div id="viewProgress" class="card" style="display:none;">
-      <div class="stack">
-        <div class="row" style="justify-content:space-between;">
-          <div class="kicker">Weapon Mastery</div>
-          <div class="pill" id="prPill">PR e1RM: —</div>
-        </div>
-        <div class="muted">Pick an exercise to see strength trend (e1RM).</div>
-
-        <select id="progressExercise">
-          <option value="">Select Exercise</option>
-        </select>
-
-        <div style="height:240px;">
-          <canvas id="chart"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- BODYWEIGHT TAB -->
-    <div id="viewBody" class="card" style="display:none;">
-      <div class="stack">
-        <div class="kicker">Vessel: Bodyweight</div>
-        <input id="bwInput" inputmode="decimal" placeholder="Bodyweight (lbs)" />
-        <button class="btn primary" id="bwBtn">Log Bodyweight</button>
-
-        <div class="divider"></div>
-        <div class="kicker">Recent Bodyweight</div>
-        <div class="list" id="bwList"></div>
-      </div>
-    </div>
-
-    <!-- SAVE TAB -->
+    <!-- SAVE -->
     <div id="viewSave" class="card" style="display:none;">
       <div class="stack">
-        <div class="kicker">Save (Export / Import)</div>
-        <div class="muted">Export occasionally so you don’t lose your progress.</div>
-
-        <button class="btn primary" id="exportBtn">Export Save (JSON)</button>
+        <div class="kicker">Save</div>
+        <button class="btn primary" id="exportBtn" type="button">Export Save (JSON)</button>
 
         <label class="btn" style="text-align:center;">
           Import Save (JSON)
@@ -269,307 +161,399 @@
         </label>
 
         <div class="divider"></div>
-        <div class="kicker">Hidden Exercises</div>
-        <div class="muted" id="hiddenCount">0 hidden</div>
-        <div class="list" id="hiddenList"></div>
+        <div class="tiny">Data is stored on this device. Export if you reinstall/switch phones.</div>
       </div>
     </div>
-
   </div>
 
-  <div id="toast" class="toast" style="display:none;"></div>
+  <div id="toast" class="toast"></div>
 
-<script>
-  // ---------------- C6–7-Friendly Pools (NO DEADLIFTS) ----------------
-  const UPPER = [
-    // Push (supported/machine/cables)
-    "Machine Chest Press",
-    "Incline DB Press (Neutral Grip)",
-    "Cable Fly (Low-to-High)",
-    "Cable Fly (High-to-Low)",
-    "Push-up (Hands Elevated / Controlled)",
-    "Triceps Rope Pushdown",
-    "Single-Arm Cable Triceps Pressdown",
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // DEBUG banner so you know JS is running
+    const dbg = document.createElement("div");
+    dbg.textContent = "✅ Tyche JS Loaded";
+    dbg.style.cssText =
+      "position:fixed;top:10px;left:50%;transform:translateX(-50%);" +
+      "background:#000;border:1px solid #8a3dff;color:#e8d7ff;" +
+      "padding:8px 10px;border-radius:12px;z-index:99999;font-weight:900;";
+    document.body.appendChild(dbg);
 
-    // Pull (supported/neutral)
-    "Lat Pulldown (Neutral/Underhand)",
-    "Seated Cable Row (Neutral)",
-    "Chest-Supported Row (Machine/DB)",
-    "Single-Arm Cable Row (Supported)",
-    "Face Pulls",
-    "Rear Delt Fly (Machine/Cable)",
+    const SPLIT = {
+      "Upper A": [
+        "Machine Chest Press",
+        "Seated Cable Row (Neutral)",
+        "Lat Pulldown (Neutral/Underhand)",
+        "Rear Delt Fly (Machine/Cable)",
+        "Cable Fly (Low-to-High)",
+        "Triceps Rope Pushdown"
+      ],
+      "Upper B": [
+        "Incline DB Press (Neutral Grip)",
+        "Chest-Supported Row (Machine/DB)",
+        "Single-Arm Cable Row (Supported)",
+        "Face Pulls",
+        "Hammer Curl (Neutral Grip)",
+        "Cable Curl (EZ/Bar)"
+      ],
+      "Lower A": [
+        "Leg Press",
+        "Bulgarian Split Squat (DB at sides)",
+        "Leg Extension",
+        "Seated / Lying Leg Curl",
+        "Standing Calf Raise",
+        "Dead Bug"
+      ],
+      "Lower B": [
+        "Hip Thrust (Machine/Bar)",
+        "Step-ups (DB at sides)",
+        "Seated / Lying Leg Curl",
+        "Goblet Squat (Light/Controlled)",
+        "Standing Calf Raise",
+        "Pallof Press"
+      ]
+    };
 
-    // Arms (seated/supported)
-    "Seated DB Curl",
-    "Cable Curl (EZ/Bar)",
-    "Hammer Curl (Neutral Grip)"
-  ];
+    const MASTER = Array.from(new Set([
+      ...Object.values(SPLIT).flat(),
+      "Cable Fly (High-to-Low)",
+      "Push-up (Hands Elevated / Controlled)",
+      "Single-Arm Cable Triceps Pressdown",
+      "Seated DB Curl",
+      "Glute Bridge",
+      "Side Plank"
+    ]));
 
-  const LOWER = [
-    // Quads/Glutes (low neck load)
-    "Leg Press",
-    "Bulgarian Split Squat (DB at sides)",
-    "Step-ups (DB at sides)",
-    "Goblet Squat (Light/Controlled)",
+    const SUBS = {
+      "Machine Chest Press": ["Incline DB Press (Neutral Grip)", "Push-up (Hands Elevated / Controlled)", "Cable Fly (High-to-Low)", "Cable Fly (Low-to-High)"],
+      "Incline DB Press (Neutral Grip)": ["Machine Chest Press", "Push-up (Hands Elevated / Controlled)", "Cable Fly (Low-to-High)"],
+      "Cable Fly (Low-to-High)": ["Cable Fly (High-to-Low)", "Machine Chest Press", "Push-up (Hands Elevated / Controlled)"],
 
-    // Posterior chain without deadlifts/hinges that flare neck (kept simple)
-    "Hip Thrust (Machine/Bar)",
-    "Glute Bridge",
+      "Seated Cable Row (Neutral)": ["Chest-Supported Row (Machine/DB)", "Single-Arm Cable Row (Supported)"],
+      "Chest-Supported Row (Machine/DB)": ["Seated Cable Row (Neutral)", "Single-Arm Cable Row (Supported)"],
+      "Single-Arm Cable Row (Supported)": ["Seated Cable Row (Neutral)", "Chest-Supported Row (Machine/DB)"],
+      "Lat Pulldown (Neutral/Underhand)": ["Seated Cable Row (Neutral)", "Chest-Supported Row (Machine/DB)"],
 
-    // Isolation
-    "Leg Extension",
-    "Seated / Lying Leg Curl",
-    "Standing Calf Raise",
+      "Face Pulls": ["Rear Delt Fly (Machine/Cable)"],
+      "Rear Delt Fly (Machine/Cable)": ["Face Pulls"],
 
-    // Core (spine-friendly)
-    "Dead Bug",
-    "Side Plank",
-    "Pallof Press"
-  ];
+      "Triceps Rope Pushdown": ["Single-Arm Cable Triceps Pressdown"],
+      "Hammer Curl (Neutral Grip)": ["Seated DB Curl", "Cable Curl (EZ/Bar)"],
+      "Cable Curl (EZ/Bar)": ["Seated DB Curl", "Hammer Curl (Neutral Grip)"],
 
-  // ---------------- Storage ----------------
-  const KEY = {
-    logs: "tyche_logs_v3",
-    bw: "tyche_bw_v3",
-    souls: "tyche_souls_v3",
-    streak: "tyche_streak_v3",
-    best: "tyche_best_v3",
-    last: "tyche_last_v3",
-    banned: "tyche_banned_v3",
-    activeWorkout: "tyche_active_workout_v3",
-    sessions: "tyche_sessions_v3"
-  };
+      "Leg Press": ["Goblet Squat (Light/Controlled)", "Step-ups (DB at sides)", "Bulgarian Split Squat (DB at sides)"],
+      "Bulgarian Split Squat (DB at sides)": ["Step-ups (DB at sides)", "Goblet Squat (Light/Controlled)"],
+      "Step-ups (DB at sides)": ["Bulgarian Split Squat (DB at sides)", "Goblet Squat (Light/Controlled)"],
+      "Goblet Squat (Light/Controlled)": ["Leg Press", "Step-ups (DB at sides)", "Bulgarian Split Squat (DB at sides)"],
 
-  const $ = (id) => document.getElementById(id);
-  const todayISO = () => new Date().toISOString().slice(0,10);
+      "Hip Thrust (Machine/Bar)": ["Glute Bridge"],
+      "Dead Bug": ["Pallof Press", "Side Plank"],
+      "Pallof Press": ["Dead Bug", "Side Plank"]
+    };
 
-  function loadJSON(k, fallback){
-    try { return JSON.parse(localStorage.getItem(k) || JSON.stringify(fallback)); }
-    catch { return fallback; }
-  }
-  function saveJSON(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
-  function loadNum(k, fallback=0){ const n = Number(localStorage.getItem(k)); return Number.isFinite(n) ? n : fallback; }
-  function saveNum(k, v){ localStorage.setItem(k, String(v)); }
+    const KEY = {
+      logs: "tyche_logs_fix_v1",
+      souls: "tyche_souls_fix_v1",
+      streak: "tyche_streak_fix_v1",
+      best: "tyche_best_fix_v1",
+      last: "tyche_last_fix_v1",
+      activePlan: "tyche_active_plan_fix_v1"
+    };
 
-  let logs = loadJSON(KEY.logs, []);
-  let bws  = loadJSON(KEY.bw, []);
-  let souls = loadNum(KEY.souls, 0);
-  let streak = loadNum(KEY.streak, 0);
-  let bestStreak = loadNum(KEY.best, 0);
-  let lastTrain = localStorage.getItem(KEY.last) || "";
+    const $ = (id) => document.getElementById(id);
+    const todayISO = () => new Date().toISOString().slice(0,10);
 
-  let banned = new Set(loadJSON(KEY.banned, []));
-  let activeWorkout = loadJSON(KEY.activeWorkout, null); // {group, createdIso, items:[{ex, done}]}
-  let sessions = loadJSON(KEY.sessions, []); // [{iso, group, items:[ex...]}]
-
-  // ---------------- Helpers ----------------
-  function e1rm(w, r){ return r <= 1 ? w : Math.round(w * (1 + r/30)); }
-
-  function toast(msg){
-    const t = $("toast");
-    t.textContent = msg;
-    t.style.display = "block";
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => t.style.display = "none", 2200);
-  }
-
-  function updateStreak(){
-    const t = todayISO();
-    if (!lastTrain){
-      streak = 1;
-    } else if (lastTrain === t) {
-      // already counted today
-    } else {
-      const lastD = new Date(lastTrain);
-      const nowD = new Date(t);
-      const diff = Math.round((nowD - lastD)/(1000*60*60*24));
-      if (diff === 1) streak += 1;
-      else streak = 1; // motivational reset
+    function loadJSON(k, fallback){
+      try { return JSON.parse(localStorage.getItem(k) || JSON.stringify(fallback)); }
+      catch { return fallback; }
     }
-    bestStreak = Math.max(bestStreak, streak);
-    lastTrain = t;
-    saveNum(KEY.streak, streak);
-    saveNum(KEY.best, bestStreak);
-    localStorage.setItem(KEY.last, lastTrain);
-  }
+    function saveJSON(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+    function loadNum(k, fallback=0){ const n = Number(localStorage.getItem(k)); return Number.isFinite(n) ? n : fallback; }
+    function saveNum(k, v){ localStorage.setItem(k, String(v)); }
 
-  function computeRecovery(){
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 7);
-    const vol7 = logs
-      .filter(l => new Date(l.isoDate) >= cutoff)
-      .reduce((s,l) => s + (l.weight*l.reps), 0);
+    let logs = loadJSON(KEY.logs, []);
+    let souls = loadNum(KEY.souls, 0);
+    let streak = loadNum(KEY.streak, 0);
+    let bestStreak = loadNum(KEY.best, 0);
+    let lastTrain = localStorage.getItem(KEY.last) || "";
+    let activePlan = loadJSON(KEY.activePlan, null);
 
-    let fatigue = Math.min(100, Math.round((vol7 / 9000) * 100));
-    let label = "Kindled";
-    let coach = "🗡️ You are kindled. Add a rep or 5 lbs and claim souls.";
-    if (fatigue >= 80){ label = "Cursed"; coach = "🛡️ Protect the flame: lighter weights, perfect reps, more rest.";}
-    else if (fatigue >= 55){ label = "Hollowing"; coach = "⚔️ Strong work. Prioritize sleep + mobility today.";}
-    return { fatigue, label, coach };
-  }
+    function toast(msg){
+      const t = $("toast");
+      t.textContent = msg;
+      t.style.display = "block";
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => t.style.display = "none", 2200);
+    }
 
-  function poolFor(group){
-    return group === "Lower" ? LOWER : UPPER;
-  }
+    function updateStreak(){
+      const t = todayISO();
+      if (!lastTrain){ streak = 1; }
+      else if (lastTrain !== t) {
+        const diff = Math.round((new Date(t) - new Date(lastTrain))/(1000*60*60*24));
+        streak = (diff === 1) ? (streak + 1) : 1;
+      }
+      bestStreak = Math.max(bestStreak, streak);
+      lastTrain = t;
+      saveNum(KEY.streak, streak);
+      saveNum(KEY.best, bestStreak);
+      localStorage.setItem(KEY.last, lastTrain);
+    }
 
-  function visiblePool(group){
-    const pool = poolFor(group);
-    const neckSafe = $("neckSafeToggle") ? $("neckSafeToggle").checked : true;
-    return neckSafe ? pool.filter(ex => !banned.has(ex)) : pool;
-  }
+    function statsForExercise(exercise){
+      const exLogs = logs.filter(l => l.exercise === exercise);
+      if (exLogs.length === 0) return { lastW:null, lastR:null, bestW:null, bestR:null };
+      const last = exLogs[0];
+      const bestW = exLogs.reduce((m,l)=> Math.max(m, l.weight), 0);
+      const bestR = exLogs.filter(l => l.weight === bestW).reduce((m,l)=> Math.max(m, l.reps), 0);
+      return { lastW:last.weight, lastR:last.reps, bestW, bestR };
+    }
 
-  // Weight stats: last-used and best (weight only, not reps)
-  function weightStats(exercise){
-    const exLogs = logs.filter(l => l.exercise === exercise);
-    if (exLogs.length === 0) return { last: null, best: null };
-    const lastEntry = exLogs[0];
-    const best = exLogs.reduce((m,l)=> Math.max(m, l.weight), 0);
-    return { last: lastEntry.weight, best };
-  }
+    function showStats(ex){
+      const s = statsForExercise(ex);
+      $("lastPill").textContent = (s.lastW!=null) ? `Last: ${s.lastW} lbs × ${s.lastR}` : "Last: —";
+      $("bestPill").textContent = (s.bestW!=null) ? `Best: ${s.bestW} lbs × ${s.bestR}` : "Best: —";
+      if (s.lastW!=null) $("weightInput").value = String(s.lastW);
+    }
 
-  function showWeightStats(ex){
-    const s = weightStats(ex);
-    $("lastWeightPill").textContent = s.last ? `Last: ${s.last} lbs` : "Last: —";
-    $("bestWeightPill").textContent = s.best ? `Best: ${s.best} lbs` : "Best: —";
-    if (s.last) $("weightInput").value = String(s.last); // auto-fill start weight
-  }
+    function fillExercises(day){
+      const routine = (SPLIT[day] || []).slice(0,6);
+      const options = Array.from(new Set([...routine, ...MASTER]));
+      $("exerciseSelect").innerHTML = ['<option value="">Select Exercise</option>']
+        .concat(options.map(x => `<option value="${x}">${x}</option>`)).join("");
+    }
 
-  // Suggestions: least recently done + balance, but also consider recent sessions
-  function lastDoneISO(exercise){
-    const entry = logs.find(l => l.exercise === exercise);
-    return entry ? entry.isoDate : "1900-01-01";
-  }
-  function daysSince(iso){
-    const d = new Date(iso);
-    const now = new Date(todayISO());
-    return Math.round((now - d) / (1000*60*60*24));
-  }
+    function renderHUD(){
+      $("setsPill").textContent = `Sets: ${logs.length}`;
+      $("soulsPill").textContent = `Souls: ${souls}`;
+      $("lastTrain").textContent = `Last Training: ${lastTrain ? new Date(lastTrain).toLocaleDateString() : "Unkindled"}`;
+      $("streakPill").textContent = `Streak: ${streak} • Best: ${bestStreak}`;
+      $("activePlanPill").textContent = activePlan ? `Plan: ${activePlan.day}` : "Plan: —";
+    }
 
-  function classifyUpper(ex){
-    const s = ex.toLowerCase();
-    if (s.includes("press") || s.includes("fly") || s.includes("push")) return "push";
-    if (s.includes("row") || s.includes("pulldown") || s.includes("face pull")) return "pull";
-    if (s.includes("rear delt")) return "rear";
-    if (s.includes("curl") || s.includes("hammer")) return "biceps";
-    if (s.includes("triceps")) return "triceps";
-    return "other";
-  }
+    function renderRecent(){
+      const wrap = $("recentList");
+      wrap.innerHTML = "";
+      const slice = logs.slice(0,10);
+      if (slice.length === 0){ wrap.innerHTML = `<div class="muted">No sets yet.</div>`; return; }
+      slice.forEach(l => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<div class="t">${l.exercise}</div><div class="m">${l.date} • ${l.day}</div><div class="v">${l.weight} lbs × ${l.reps}</div>`;
+        wrap.appendChild(div);
+      });
+    }
 
-  function classifyLower(ex){
-    const s = ex.toLowerCase();
-    if (s.includes("press") || s.includes("squat") || s.includes("step") || s.includes("split")) return "quad";
-    if (s.includes("thrust") || s.includes("bridge")) return "glute";
-    if (s.includes("curl")) return "ham";
-    if (s.includes("extension")) return "quad_iso";
-    if (s.includes("calf")) return "calf";
-    if (s.includes("dead bug") || s.includes("plank") || s.includes("pallof")) return "core";
-    return "other";
-  }
+    function startPlan(day){
+      const base = (SPLIT[day] || []).slice(0,6);
+      activePlan = { day, createdIso: todayISO(), items: base.map(ex => ({ baseEx: ex, chosenEx: ex, done:false })) };
+      saveJSON(KEY.activePlan, activePlan);
+    }
 
-  function recentSessionExercises(group, n=2){
-    const recent = sessions.filter(s => s.group === group).slice(0, n);
-    const set = new Set(recent.flatMap(s => s.items));
-    return set;
-  }
+    function renderPlan(){
+      const wrap = $("planList");
+      wrap.innerHTML = "";
+      if (!activePlan){ wrap.innerHTML = `<div class="muted">No active plan. Hit “Start Plan (Checklist)”.</div>`; return; }
 
-  function generateNext(group){
-    const pool = visiblePool(group);
-    const recentSet = recentSessionExercises(group, 2); // avoid repeating too much
+      activePlan.items.forEach((it, idx) => {
+        const chosen = it.chosenEx;
+        const s = statsForExercise(chosen);
 
-    const sorted = pool
-      .map(ex => ({ ex, iso: lastDoneISO(ex), gap: daysSince(lastDoneISO(ex)), recently: recentSet.has(ex) }))
-      .sort((a,b) => {
-        // prioritize not-recent-session first, then biggest gap
-        if (a.recently !== b.recently) return a.recently ? 1 : -1;
-        return b.gap - a.gap;
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="row" style="gap:10px;">
+            <div style="flex:1;">
+              <div class="t">${idx+1}. ${chosen}</div>
+              <div class="m">${(s.lastW!=null) ? `Last: ${s.lastW}×${s.lastR}` : `Last: —`} • ${(s.bestW!=null) ? `Best: ${s.bestW}×${s.bestR}` : `Best: —`}</div>
+            </div>
+            <input class="check" type="checkbox" ${it.done ? "checked":""} data-i="${idx}">
+          </div>
+          <div class="subRow">
+            <button class="btn" data-log="${idx}" type="button">Log this</button>
+            <select data-sub="${idx}"><option value="">Sub (optional)</option></select>
+          </div>
+        `;
+        wrap.appendChild(div);
+
+        const subs = (SUBS[it.baseEx] || []).filter(x => x !== it.baseEx);
+        const sel = div.querySelector('select[data-sub]');
+        sel.innerHTML = ['<option value="">Sub (optional)</option>'].concat(subs.map(s2 => `<option value="${s2}">${s2}</option>`)).join("");
+        sel.value = (it.chosenEx !== it.baseEx) ? it.chosenEx : "";
       });
 
-    const picks = [];
-    const need = group === "Upper"
-      ? { push:2, pull:2, rear:1, biceps:1, triceps:1 }
-      : { quad:2, glute:1, ham:1, quad_iso:1, calf:1, core:1 };
+      wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener("change", (e) => {
+          const i = Number(e.target.getAttribute("data-i"));
+          activePlan.items[i].done = e.target.checked;
+          saveJSON(KEY.activePlan, activePlan);
+        });
+      });
 
-    const classifier = group === "Upper" ? classifyUpper : classifyLower;
+      wrap.querySelectorAll('select[data-sub]').forEach(sel => {
+        sel.addEventListener("change", (e) => {
+          const i = Number(e.target.getAttribute("data-sub"));
+          const sub = e.target.value || "";
+          activePlan.items[i].chosenEx = sub ? sub : activePlan.items[i].baseEx;
+          saveJSON(KEY.activePlan, activePlan);
+          renderPlan();
+        });
+      });
 
-    for (const item of sorted){
-      if (picks.length >= 7) break;
-      const bucket = classifier(item.ex);
-      if (need[bucket] > 0){
-        picks.push(item);
-        need[bucket] -= 1;
-      }
+      wrap.querySelectorAll('button[data-log]').forEach(btn => {
+        btn.addEventListener("click", () => {
+          const i = Number(btn.getAttribute("data-log"));
+          const ex = activePlan.items[i].chosenEx;
+          $("daySelect").value = activePlan.day;
+          fillExercises(activePlan.day);
+          $("exerciseSelect").value = ex;
+          showStats(ex);
+          show("log");
+          toast("⚔️ Logging: " + ex);
+        });
+      });
     }
 
-    for (const item of sorted){
-      if (picks.find(p => p.ex === item.ex)) continue;
-      if (picks.length >= 7) break;
-      picks.push(item);
+    function show(tab){
+      $("viewLog").style.display = (tab==="log") ? "block" : "none";
+      $("viewPlan").style.display = (tab==="plan") ? "block" : "none";
+      $("viewSave").style.display = (tab==="save") ? "block" : "none";
+      $("tabLog").className = "btn" + ((tab==="log") ? " primary" : "");
+      $("tabPlan").className = "btn" + ((tab==="plan") ? " primary" : "");
+      $("tabSave").className = "btn" + ((tab==="save") ? " primary" : "");
     }
 
-    return picks.slice(0,7);
-  }
+    $("tabLog").addEventListener("click", ()=>show("log"));
+    $("tabPlan").addEventListener("click", ()=>show("plan"));
+    $("tabSave").addEventListener("click", ()=>show("save"));
 
-  // ---------------- UI Rendering ----------------
-  function fillExercises(group){
-    const sel = $("exerciseSelect");
-    const progSel = $("progressExercise");
-
-    const pool = poolFor(group).filter(ex => !banned.has(ex)); // log screen always respects bans
-    sel.innerHTML = ['<option value="">Select Exercise</option>']
-      .concat(pool.map(x => `<option value="${x}">${x}</option>`))
-      .join("");
-
-    const all = new Set([...UPPER, ...LOWER]);
-    logs.forEach(l => all.add(l.exercise));
-    progSel.innerHTML = ['<option value="">Select Exercise</option>']
-      .concat([...all].sort().map(x => `<option value="${x}">${x}</option>`))
-      .join("");
-
-    renderHiddenList();
-  }
-
-  function renderRecent(){
-    const wrap = $("recentList");
-    wrap.innerHTML = "";
-    const slice = logs.slice(0,10);
-    if (slice.length === 0){
-      wrap.innerHTML = `<div class="muted">No sets yet. Kindle the flame.</div>`;
-      return;
-    }
-    slice.forEach(l => {
-      const div = document.createElement("div");
-      div.className = "item";
-      div.innerHTML = `
-        <div class="t">${l.exercise}</div>
-        <div class="m">${l.date} • ${l.group}</div>
-        <div class="v">${l.weight} lbs × ${l.reps} reps • e1RM ${l.e1rm}</div>
-      `;
-      wrap.appendChild(div);
+    $("daySelect").addEventListener("change", (e) => {
+      fillExercises(e.target.value);
+      $("weightInput").value = "";
+      $("repsInput").value = "";
+      $("lastPill").textContent = "Last: —";
+      $("bestPill").textContent = "Best: —";
     });
-  }
 
-  function renderBW(){
-    const wrap = $("bwList");
-    wrap.innerHTML = "";
-    const slice = bws.slice(0,10);
-    if (slice.length === 0){
-      wrap.innerHTML = `<div class="muted">No bodyweight logs yet.</div>`;
-      return;
-    }
-    slice.forEach(x => {
-      const div = document.createElement("div");
-      div.className = "item";
-      div.innerHTML = `<div class="t">${x.weight} lbs</div><div class="m">${x.date}</div>`;
-      wrap.appendChild(div);
+    $("exerciseSelect").addEventListener("change", (e) => {
+      const ex = e.target.value;
+      if (ex) showStats(ex);
     });
-  }
 
-  let chart;
-  function renderChart(ex){
-    const data = logs.filter(l => l.exercise === ex).slice().reverse();
-    const labels = data.map(d => d.date);
-    const points = data.map(d => d.e1rm);
-    const pr = points.length ? Math.max(...points) : 0;
-    $("prPill").textContent = pr ? `PR e1RM: ${pr}` : "PR e1RM: —";
+    $("addSetBtn").addEventListener("click", () => {
+      const day = $("daySelect").value;
+      const ex = $("exerciseSelect").value;
+      const w = Number($("weightInput").value);
+      const r = Number($("repsInput").value);
 
-    const
+      if (!ex || !w || !r){ toast("⚠️ Pick exercise + enter weight/reps."); return; }
+
+      logs.unshift({
+        id: Date.now() + "_" + Math.random().toString(16).slice(2),
+        isoDate: todayISO(),
+        date: new Date().toLocaleDateString(),
+        day, exercise: ex, weight: w, reps: r
+      });
+      saveJSON(KEY.logs, logs);
+
+      souls += 50; saveNum(KEY.souls, souls);
+      updateStreak();
+
+      toast("🔥 Set logged.");
+      $("repsInput").value = "";
+      renderRecent(); renderHUD(); showStats(ex); renderPlan();
+    });
+
+    $("recoveryBtn").addEventListener("click", () => {
+      souls += 25; saveNum(KEY.souls, souls);
+      toast("🛡️ Recovery ritual logged.");
+      renderHUD();
+    });
+
+    $("clearBtn").addEventListener("click", () => {
+      if (!confirm("Clear ALL data (sets, souls, streak, plan)?")) return;
+      logs = []; souls = 0; streak = 0; bestStreak = 0; lastTrain = ""; activePlan = null;
+      saveJSON(KEY.logs, logs);
+      saveNum(KEY.souls, souls);
+      saveNum(KEY.streak, streak);
+      saveNum(KEY.best, bestStreak);
+      localStorage.setItem(KEY.last, "");
+      saveJSON(KEY.activePlan, null);
+      toast("🧹 Cleared.");
+      renderRecent(); renderHUD(); renderPlan();
+      $("lastPill").textContent = "Last: —";
+      $("bestPill").textContent = "Best: —";
+      $("weightInput").value = ""; $("repsInput").value = "";
+    });
+
+    $("startPlanBtn").addEventListener("click", () => {
+      const day = $("planSelect").value;
+      startPlan(day);
+      renderPlan(); renderHUD();
+      toast("🔥 Plan started: " + day);
+    });
+
+    $("finishPlanBtn").addEventListener("click", () => {
+      activePlan = null;
+      saveJSON(KEY.activePlan, null);
+      renderPlan(); renderHUD();
+      toast("🏁 Plan finished.");
+    });
+
+    $("cancelPlanBtn").addEventListener("click", () => {
+      activePlan = null;
+      saveJSON(KEY.activePlan, null);
+      renderPlan(); renderHUD();
+      toast("Canceled.");
+    });
+
+    $("exportBtn").addEventListener("click", () => {
+      const payload = { logs, souls, streak, bestStreak, lastTrain, activePlan, exportedAt: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "tyche-ashen-iron-save.json"; a.click();
+      URL.revokeObjectURL(url);
+      toast("📦 Save exported.");
+    });
+
+    $("importFile").addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const data = JSON.parse(String(reader.result || "{}"));
+          logs = Array.isArray(data.logs) ? data.logs : [];
+          souls = Number(data.souls || 0);
+          streak = Number(data.streak || 0);
+          bestStreak = Number(data.bestStreak || 0);
+          lastTrain = String(data.lastTrain || "");
+          activePlan = data.activePlan || null;
+
+          saveJSON(KEY.logs, logs);
+          saveNum(KEY.souls, souls);
+          saveNum(KEY.streak, streak);
+          saveNum(KEY.best, bestStreak);
+          localStorage.setItem(KEY.last, lastTrain);
+          saveJSON(KEY.activePlan, activePlan);
+
+          toast("🗝️ Save restored.");
+          fillExercises($("daySelect").value);
+          renderRecent(); renderHUD(); renderPlan();
+        } catch { toast("⚠️ Could not import."); }
+        e.target.value = "";
+      };
+      reader.readAsText(file);
+    });
+
+    // INIT
+    fillExercises($("daySelect").value);
+    renderRecent();
+    renderHUD();
+    renderPlan();
+    show("log");
+  });
+  </script>
+</body>
+</html>
