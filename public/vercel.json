@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/manifest.webmanifest", "destination": "/public/manifest.webmanifest" },
+    { "source": "/icon-192.png", "destination": "/public/icon-192.png" },
+    { "source": "/icon-512.png", "destination": "/public/icon-512.png" },
+    { "source": "/(.*)", "destination": "/public/index.html" }
+  ]
+}
