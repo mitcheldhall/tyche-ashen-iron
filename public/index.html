@@ -1,13 +1,14 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <link rel="manifest" href="/manifest.webmanifest">
-<meta name="theme-color" content="#120020">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tyche: Ashen Iron</title>
 
-  <!-- Chart.js (for progress charts) -->
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#120020">
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -20,7 +21,9 @@
       --muted: rgba(231,215,255,.7);
       --accent:#8a3dff;
       --accent2:#c084fc;
-      --danger:#b00020;
+      --danger:#ff6b7a;
+      --ok:#7CFFB2;
+      --warn:#FFD36E;
     }
     *{box-sizing:border-box}
     body{
@@ -29,7 +32,7 @@
       background: radial-gradient(1200px 800px at 50% 0%, #140021 0%, var(--bg1) 40%, var(--bg0) 100%);
       color: var(--text);
     }
-    .container{max-width:430px; margin:0 auto; padding:14px; min-height:100vh;}
+    .container{max-width:460px; margin:0 auto; padding:14px; min-height:100vh;}
     .title{font-size:22px; font-weight:900; text-align:center; letter-spacing:.6px; margin:6px 0 10px;}
     .nav{display:flex; gap:8px; justify-content:center; flex-wrap:wrap;}
     .btn{
@@ -46,6 +49,7 @@
       border-color: rgba(138,61,255,.7);
     }
     .btn:active{transform:scale(.98)}
+    .btn.danger{border-color: rgba(255,107,122,.55); color: var(--danger);}
     .card{
       background: var(--card);
       border:1px solid var(--border);
@@ -56,7 +60,6 @@
     }
     .row{display:flex; gap:10px; align-items:center; justify-content:space-between;}
     .stack{display:flex; flex-direction:column; gap:10px;}
-    .label{font-size:12px; color:var(--muted); font-weight:700;}
     input, select{
       width:100%;
       padding:12px;
@@ -70,6 +73,7 @@
       font-size:11px; font-weight:900; padding:6px 10px; border-radius:999px;
       border:1px solid rgba(183,140,255,.25); color: rgba(231,215,255,.85);
       background: rgba(0,0,0,.25);
+      white-space:nowrap;
     }
     .muted{color:var(--muted); font-size:12px;}
     .quote{margin-top:8px; font-style:italic; color: rgba(192,132,252,.95);}
@@ -90,7 +94,12 @@
       max-width: 92vw;
       text-align:center;
     }
-    .danger{color:#ff6b7a;}
+    .tiny{font-size:11px; color:rgba(231,215,255,.65)}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+    .chipRow{display:flex; gap:8px; flex-wrap:wrap;}
+    .chip{display:flex; align-items:center; gap:8px; padding:10px; border-radius:14px; border:1px solid rgba(183,140,255,.18); background: rgba(0,0,0,.25);}
+    .check{transform: scale(1.1);}
+    .kicker{font-weight:900; color:var(--accent2)}
   </style>
 </head>
 
@@ -100,37 +109,46 @@
 
     <div class="nav">
       <button class="btn primary" id="tabLog">Log</button>
+      <button class="btn" id="tabNext">Next Up</button>
       <button class="btn" id="tabProgress">Progress</button>
       <button class="btn" id="tabBody">Bodyweight</button>
       <button class="btn" id="tabSave">Save</button>
     </div>
 
-    <!-- BONFIRE -->
     <div class="card">
       <div class="row">
         <div>
-          <div style="font-weight:900; color:var(--accent2)">Bonfire Checkpoint</div>
+          <div class="kicker">Bonfire Checkpoint</div>
           <div class="muted" id="lastTrain">Last Training: Unkindled</div>
         </div>
         <div class="pill" id="streakPill">Streak: 0 • Best: 0</div>
       </div>
       <div class="quote">“Rested and ready—your strength grows with every session.”</div>
+
       <div class="divider"></div>
+
       <div class="row" style="gap:10px; flex-wrap:wrap; justify-content:center;">
         <div class="pill" id="soulsPill">Souls: 0</div>
         <div class="pill" id="setsPill">Sets: 0</div>
         <div class="pill" id="recoveryPill">Recovery: Kindled</div>
       </div>
+
       <div class="muted" style="margin-top:10px;" id="coachLine">🗡️ Log a set to begin your run.</div>
+
+      <div class="divider"></div>
+      <div class="tiny">
+        <b>C6–7 safety note:</b> keep neck neutral, avoid straining, and stop if you get radiating pain/tingling/numbness.
+      </div>
     </div>
 
     <!-- LOG TAB -->
     <div id="viewLog" class="card">
       <div class="stack">
         <div class="row" style="justify-content:space-between;">
-          <div style="font-weight:900; color:var(--accent2)">Log a Set</div>
-          <select id="daySelect" style="max-width:160px;">
-            <option>Upper A</option><option>Upper B</option><option>Lower A</option><option>Lower B</option>
+          <div class="kicker">Log a Set</div>
+          <select id="groupSelect" style="max-width:160px;">
+            <option value="Upper">Upper</option>
+            <option value="Lower">Lower</option>
           </select>
         </div>
 
@@ -138,20 +156,70 @@
           <option value="">Select Exercise</option>
         </select>
 
+        <div class="grid2">
+          <div class="pill" id="lastWeightPill">Last: —</div>
+          <div class="pill" id="bestWeightPill">Best: —</div>
+        </div>
+
+        <div class="row" style="gap:8px;">
+          <button class="btn" id="banBtn" style="flex:1;">Hide Exercise</button>
+          <button class="btn" id="unbanBtn" style="flex:1;">Unhide All</button>
+        </div>
+
         <input id="weightInput" inputmode="decimal" placeholder="Weight (lbs)" />
         <input id="repsInput" inputmode="numeric" placeholder="Reps" />
 
         <button class="btn primary" id="addSetBtn">Add Set</button>
 
         <div class="row">
-          <button class="btn" id="recoveryBtn">Recovery Ritual (+Souls)</button>
-          <button class="btn" id="clearBtn"><span class="danger">Clear All</span></button>
+          <button class="btn" id="recoveryBtn">Recovery Ritual</button>
+          <button class="btn danger" id="clearBtn">Clear All</button>
         </div>
 
         <div class="divider"></div>
-        <div style="font-weight:900; color:var(--accent2)">Recent Deeds</div>
+        <div class="kicker">Recent Deeds</div>
         <div class="muted">Last 10 sets.</div>
         <div class="list" id="recentList"></div>
+      </div>
+    </div>
+
+    <!-- NEXT UP TAB -->
+    <div id="viewNext" class="card" style="display:none;">
+      <div class="stack">
+        <div class="row" style="justify-content:space-between;">
+          <div class="kicker">Next Up</div>
+          <select id="nextGroupSelect" style="max-width:160px;">
+            <option value="Upper">Upper</option>
+            <option value="Lower">Lower</option>
+          </select>
+        </div>
+
+        <div class="chipRow">
+          <div class="chip">
+            <input class="check" type="checkbox" id="neckSafeToggle" checked />
+            <label for="neckSafeToggle" class="muted"><b>Neck-Safe Mode</b> (hide banned moves)</label>
+          </div>
+        </div>
+
+        <button class="btn primary" id="genNextBtn">Generate Next Workout</button>
+        <button class="btn" id="startWorkoutBtn">Start Workout (Checklist)</button>
+
+        <div class="divider"></div>
+        <div class="list" id="nextList"></div>
+
+        <div class="divider"></div>
+        <div class="kicker">Active Workout</div>
+        <div class="muted">Check off exercises as you complete them. Tap an item to jump into logging.</div>
+        <div class="list" id="activeWorkoutList"></div>
+
+        <div class="row">
+          <button class="btn" id="finishWorkoutBtn">Finish Workout</button>
+          <button class="btn danger" id="cancelWorkoutBtn">Cancel</button>
+        </div>
+
+        <div class="tiny">
+          <b>No deadlifts:</b> removed completely by design.
+        </div>
       </div>
     </div>
 
@@ -159,10 +227,10 @@
     <div id="viewProgress" class="card" style="display:none;">
       <div class="stack">
         <div class="row" style="justify-content:space-between;">
-          <div style="font-weight:900; color:var(--accent2)">Weapon Mastery</div>
+          <div class="kicker">Weapon Mastery</div>
           <div class="pill" id="prPill">PR e1RM: —</div>
         </div>
-        <div class="muted">Pick an exercise, see estimated strength trend (e1RM).</div>
+        <div class="muted">Pick an exercise to see strength trend (e1RM).</div>
 
         <select id="progressExercise">
           <option value="">Select Exercise</option>
@@ -177,12 +245,12 @@
     <!-- BODYWEIGHT TAB -->
     <div id="viewBody" class="card" style="display:none;">
       <div class="stack">
-        <div style="font-weight:900; color:var(--accent2)">Vessel: Bodyweight</div>
+        <div class="kicker">Vessel: Bodyweight</div>
         <input id="bwInput" inputmode="decimal" placeholder="Bodyweight (lbs)" />
         <button class="btn primary" id="bwBtn">Log Bodyweight</button>
 
         <div class="divider"></div>
-        <div style="font-weight:900; color:var(--accent2)">Recent Bodyweight</div>
+        <div class="kicker">Recent Bodyweight</div>
         <div class="list" id="bwList"></div>
       </div>
     </div>
@@ -190,8 +258,8 @@
     <!-- SAVE TAB -->
     <div id="viewSave" class="card" style="display:none;">
       <div class="stack">
-        <div style="font-weight:900; color:var(--accent2)">Save (Export / Import)</div>
-        <div class="muted">This keeps your data safe if you reinstall the app.</div>
+        <div class="kicker">Save (Export / Import)</div>
+        <div class="muted">Export occasionally so you don’t lose your progress.</div>
 
         <button class="btn primary" id="exportBtn">Export Save (JSON)</button>
 
@@ -201,9 +269,9 @@
         </label>
 
         <div class="divider"></div>
-        <div class="muted">
-          ⚠️ Data is stored locally on this device by default. Export your save occasionally.
-        </div>
+        <div class="kicker">Hidden Exercises</div>
+        <div class="muted" id="hiddenCount">0 hidden</div>
+        <div class="list" id="hiddenList"></div>
       </div>
     </div>
 
@@ -212,22 +280,64 @@
   <div id="toast" class="toast" style="display:none;"></div>
 
 <script>
-  // ---------- Templates ----------
-  const templates = {
-    "Upper A": ["Machine Chest Press","Incline DB Press","Seated Cable Row","Chest-Supported Row","Cable Fly","Face Pulls","Rope Triceps Pushdown"],
-    "Upper B": ["Lat Pulldown","Seated Cable Row (Alt Grip)","Chest-Supported Machine Row","Incline Machine Chest Press","Cable Fly High-Low","Rear Delt Fly","Seated Biceps Curl"],
-    "Lower A": ["Leg Press","Goblet Squat / Hack Squat","Leg Extension","Standing Calf Raise","Dead Bug"],
-    "Lower B": ["Hip Thrust","DB Romanian Deadlift","Seated Leg Curl","Reverse Lunge","Standing Calf Raise","Side Plank"]
-  };
+  // ---------------- C6–7-Friendly Pools (NO DEADLIFTS) ----------------
+  const UPPER = [
+    // Push (supported/machine/cables)
+    "Machine Chest Press",
+    "Incline DB Press (Neutral Grip)",
+    "Cable Fly (Low-to-High)",
+    "Cable Fly (High-to-Low)",
+    "Push-up (Hands Elevated / Controlled)",
+    "Triceps Rope Pushdown",
+    "Single-Arm Cable Triceps Pressdown",
 
-  // ---------- Storage ----------
+    // Pull (supported/neutral)
+    "Lat Pulldown (Neutral/Underhand)",
+    "Seated Cable Row (Neutral)",
+    "Chest-Supported Row (Machine/DB)",
+    "Single-Arm Cable Row (Supported)",
+    "Face Pulls",
+    "Rear Delt Fly (Machine/Cable)",
+
+    // Arms (seated/supported)
+    "Seated DB Curl",
+    "Cable Curl (EZ/Bar)",
+    "Hammer Curl (Neutral Grip)"
+  ];
+
+  const LOWER = [
+    // Quads/Glutes (low neck load)
+    "Leg Press",
+    "Bulgarian Split Squat (DB at sides)",
+    "Step-ups (DB at sides)",
+    "Goblet Squat (Light/Controlled)",
+
+    // Posterior chain without deadlifts/hinges that flare neck (kept simple)
+    "Hip Thrust (Machine/Bar)",
+    "Glute Bridge",
+
+    // Isolation
+    "Leg Extension",
+    "Seated / Lying Leg Curl",
+    "Standing Calf Raise",
+
+    // Core (spine-friendly)
+    "Dead Bug",
+    "Side Plank",
+    "Pallof Press"
+  ];
+
+  // ---------------- Storage ----------------
   const KEY = {
-    logs: "tyche_logs_v1",
-    bw: "tyche_bw_v1",
-    souls: "tyche_souls_v1",
-    streak: "tyche_streak_v1",
-    best: "tyche_best_v1",
-    last: "tyche_last_v1"
+    logs: "tyche_logs_v3",
+    bw: "tyche_bw_v3",
+    souls: "tyche_souls_v3",
+    streak: "tyche_streak_v3",
+    best: "tyche_best_v3",
+    last: "tyche_last_v3",
+    banned: "tyche_banned_v3",
+    activeWorkout: "tyche_active_workout_v3",
+    sessions: "tyche_sessions_v3"
   };
 
   const $ = (id) => document.getElementById(id);
@@ -248,9 +358,12 @@
   let bestStreak = loadNum(KEY.best, 0);
   let lastTrain = localStorage.getItem(KEY.last) || "";
 
-  // ---------- RPG math ----------
+  let banned = new Set(loadJSON(KEY.banned, []));
+  let activeWorkout = loadJSON(KEY.activeWorkout, null); // {group, createdIso, items:[{ex, done}]}
+  let sessions = loadJSON(KEY.sessions, []); // [{iso, group, items:[ex...]}]
+
+  // ---------------- Helpers ----------------
   function e1rm(w, r){ return r <= 1 ? w : Math.round(w * (1 + r/30)); }
-  function volume(w, r){ return w * r; }
 
   function toast(msg){
     const t = $("toast");
@@ -264,14 +377,14 @@
     const t = todayISO();
     if (!lastTrain){
       streak = 1;
-    } else if (lastTrain === t){
+    } else if (lastTrain === t) {
       // already counted today
     } else {
       const lastD = new Date(lastTrain);
       const nowD = new Date(t);
       const diff = Math.round((nowD - lastD)/(1000*60*60*24));
       if (diff === 1) streak += 1;
-      else streak = 1; // motivational reset (no punishment)
+      else streak = 1; // motivational reset
     }
     bestStreak = Math.max(bestStreak, streak);
     lastTrain = t;
@@ -281,44 +394,140 @@
   }
 
   function computeRecovery(){
-    // Simple fatigue proxy: last 7 days total volume
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 7);
     const vol7 = logs
       .filter(l => new Date(l.isoDate) >= cutoff)
-      .reduce((s,l) => s + l.vol, 0);
+      .reduce((s,l) => s + (l.weight*l.reps), 0);
 
-    let fatigue = Math.min(100, Math.round((vol7 / 8000) * 100)); // tune
+    let fatigue = Math.min(100, Math.round((vol7 / 9000) * 100));
     let label = "Kindled";
     let coach = "🗡️ You are kindled. Add a rep or 5 lbs and claim souls.";
-    if (fatigue >= 80){ label = "Cursed"; coach = "🛡️ Protect the flame: go lighter, perfect reps."; }
-    else if (fatigue >= 55){ label = "Hollowing"; coach = "⚔️ Strong work. Prioritize sleep + mobility."; }
+    if (fatigue >= 80){ label = "Cursed"; coach = "🛡️ Protect the flame: lighter weights, perfect reps, more rest.";}
+    else if (fatigue >= 55){ label = "Hollowing"; coach = "⚔️ Strong work. Prioritize sleep + mobility today.";}
     return { fatigue, label, coach };
   }
 
-  // ---------- UI: templates ----------
-  function fillExercises(day){
+  function poolFor(group){
+    return group === "Lower" ? LOWER : UPPER;
+  }
+
+  function visiblePool(group){
+    const pool = poolFor(group);
+    const neckSafe = $("neckSafeToggle") ? $("neckSafeToggle").checked : true;
+    return neckSafe ? pool.filter(ex => !banned.has(ex)) : pool;
+  }
+
+  // Weight stats: last-used and best (weight only, not reps)
+  function weightStats(exercise){
+    const exLogs = logs.filter(l => l.exercise === exercise);
+    if (exLogs.length === 0) return { last: null, best: null };
+    const lastEntry = exLogs[0];
+    const best = exLogs.reduce((m,l)=> Math.max(m, l.weight), 0);
+    return { last: lastEntry.weight, best };
+  }
+
+  function showWeightStats(ex){
+    const s = weightStats(ex);
+    $("lastWeightPill").textContent = s.last ? `Last: ${s.last} lbs` : "Last: —";
+    $("bestWeightPill").textContent = s.best ? `Best: ${s.best} lbs` : "Best: —";
+    if (s.last) $("weightInput").value = String(s.last); // auto-fill start weight
+  }
+
+  // Suggestions: least recently done + balance, but also consider recent sessions
+  function lastDoneISO(exercise){
+    const entry = logs.find(l => l.exercise === exercise);
+    return entry ? entry.isoDate : "1900-01-01";
+  }
+  function daysSince(iso){
+    const d = new Date(iso);
+    const now = new Date(todayISO());
+    return Math.round((now - d) / (1000*60*60*24));
+  }
+
+  function classifyUpper(ex){
+    const s = ex.toLowerCase();
+    if (s.includes("press") || s.includes("fly") || s.includes("push")) return "push";
+    if (s.includes("row") || s.includes("pulldown") || s.includes("face pull")) return "pull";
+    if (s.includes("rear delt")) return "rear";
+    if (s.includes("curl") || s.includes("hammer")) return "biceps";
+    if (s.includes("triceps")) return "triceps";
+    return "other";
+  }
+
+  function classifyLower(ex){
+    const s = ex.toLowerCase();
+    if (s.includes("press") || s.includes("squat") || s.includes("step") || s.includes("split")) return "quad";
+    if (s.includes("thrust") || s.includes("bridge")) return "glute";
+    if (s.includes("curl")) return "ham";
+    if (s.includes("extension")) return "quad_iso";
+    if (s.includes("calf")) return "calf";
+    if (s.includes("dead bug") || s.includes("plank") || s.includes("pallof")) return "core";
+    return "other";
+  }
+
+  function recentSessionExercises(group, n=2){
+    const recent = sessions.filter(s => s.group === group).slice(0, n);
+    const set = new Set(recent.flatMap(s => s.items));
+    return set;
+  }
+
+  function generateNext(group){
+    const pool = visiblePool(group);
+    const recentSet = recentSessionExercises(group, 2); // avoid repeating too much
+
+    const sorted = pool
+      .map(ex => ({ ex, iso: lastDoneISO(ex), gap: daysSince(lastDoneISO(ex)), recently: recentSet.has(ex) }))
+      .sort((a,b) => {
+        // prioritize not-recent-session first, then biggest gap
+        if (a.recently !== b.recently) return a.recently ? 1 : -1;
+        return b.gap - a.gap;
+      });
+
+    const picks = [];
+    const need = group === "Upper"
+      ? { push:2, pull:2, rear:1, biceps:1, triceps:1 }
+      : { quad:2, glute:1, ham:1, quad_iso:1, calf:1, core:1 };
+
+    const classifier = group === "Upper" ? classifyUpper : classifyLower;
+
+    for (const item of sorted){
+      if (picks.length >= 7) break;
+      const bucket = classifier(item.ex);
+      if (need[bucket] > 0){
+        picks.push(item);
+        need[bucket] -= 1;
+      }
+    }
+
+    for (const item of sorted){
+      if (picks.find(p => p.ex === item.ex)) continue;
+      if (picks.length >= 7) break;
+      picks.push(item);
+    }
+
+    return picks.slice(0,7);
+  }
+
+  // ---------------- UI Rendering ----------------
+  function fillExercises(group){
     const sel = $("exerciseSelect");
     const progSel = $("progressExercise");
 
-    const list = templates[day] || [];
-    const opts = ['<option value="">Select Exercise</option>']
-      .concat(list.map(x => `<option value="${x}">${x}</option>`))
+    const pool = poolFor(group).filter(ex => !banned.has(ex)); // log screen always respects bans
+    sel.innerHTML = ['<option value="">Select Exercise</option>']
+      .concat(pool.map(x => `<option value="${x}">${x}</option>`))
       .join("");
 
-    sel.innerHTML = opts;
-
-    // progress dropdown should show *all* exercises ever used + templates
-    const all = new Set();
-    Object.values(templates).flat().forEach(x => all.add(x));
+    const all = new Set([...UPPER, ...LOWER]);
     logs.forEach(l => all.add(l.exercise));
-    const opts2 = ['<option value="">Select Exercise</option>']
+    progSel.innerHTML = ['<option value="">Select Exercise</option>']
       .concat([...all].sort().map(x => `<option value="${x}">${x}</option>`))
       .join("");
-    progSel.innerHTML = opts2;
+
+    renderHiddenList();
   }
 
-  // ---------- UI: recent lists ----------
   function renderRecent(){
     const wrap = $("recentList");
     wrap.innerHTML = "";
@@ -332,7 +541,7 @@
       div.className = "item";
       div.innerHTML = `
         <div class="t">${l.exercise}</div>
-        <div class="m">${l.date} • ${l.day}</div>
+        <div class="m">${l.date} • ${l.group}</div>
         <div class="v">${l.weight} lbs × ${l.reps} reps • e1RM ${l.e1rm}</div>
       `;
       wrap.appendChild(div);
@@ -350,24 +559,16 @@
     slice.forEach(x => {
       const div = document.createElement("div");
       div.className = "item";
-      div.innerHTML = `
-        <div class="t">${x.weight} lbs</div>
-        <div class="m">${x.date}</div>
-      `;
+      div.innerHTML = `<div class="t">${x.weight} lbs</div><div class="m">${x.date}</div>`;
       wrap.appendChild(div);
     });
   }
 
-  // ---------- Chart ----------
   let chart;
   function renderChart(ex){
-    const data = logs
-      .filter(l => l.exercise === ex)
-      .slice().reverse();
-
+    const data = logs.filter(l => l.exercise === ex).slice().reverse();
     const labels = data.map(d => d.date);
     const points = data.map(d => d.e1rm);
-
     const pr = points.length ? Math.max(...points) : 0;
     $("prPill").textContent = pr ? `PR e1RM: ${pr}` : "PR e1RM: —";
 
@@ -375,29 +576,11 @@
     if (chart) chart.destroy();
     chart = new Chart(ctx, {
       type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label: "e1RM",
-          data: points,
-          borderWidth: 2,
-          tension: 0.25
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false },
-          tooltip: { enabled: true }
-        },
-        scales: {
-          x: { ticks: { maxRotation: 0, autoSkip: true } }
-        }
-      }
+      data: { labels, datasets: [{ label:"e1RM", data: points, borderWidth:2, tension:0.25 }] },
+      options: { responsive:true, plugins:{ legend:{display:false} } }
     });
   }
 
-  // ---------- HUD ----------
   function renderHUD(){
     $("soulsPill").textContent = `Souls: ${souls}`;
     $("setsPill").textContent = `Sets: ${logs.length}`;
@@ -409,9 +592,119 @@
     $("coachLine").textContent = rec.coach;
   }
 
-  // ---------- Actions ----------
+  function renderNext(){
+    const group = $("nextGroupSelect").value;
+    const picks = generateNext(group);
+    const wrap = $("nextList");
+    wrap.innerHTML = "";
+
+    picks.forEach((p, idx) => {
+      const stats = weightStats(p.ex);
+      const lastLine = stats.last ? `Last: ${stats.last} lbs` : "Last: —";
+      const bestLine = stats.best ? `Best: ${stats.best} lbs` : "Best: —";
+      const gap = p.gap >= 3650 ? "Never" : `${p.gap}d ago`;
+      const recentTag = p.recently ? " (recent)" : "";
+
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="t">${idx+1}. ${p.ex}${recentTag}</div>
+        <div class="m">Last done: ${gap} • ${lastLine} • ${bestLine}</div>
+        <div class="v">Start: <b>${stats.last ? stats.last : "conservative warm-up"}</b> • Keep neck neutral.</div>
+      `;
+      wrap.appendChild(div);
+    });
+  }
+
+  function renderActiveWorkout(){
+    const wrap = $("activeWorkoutList");
+    wrap.innerHTML = "";
+    if (!activeWorkout){
+      wrap.innerHTML = `<div class="muted">No active workout. Hit “Start Workout (Checklist)”.</div>`;
+      return;
+    }
+
+    activeWorkout.items.forEach((it, idx) => {
+      const stats = weightStats(it.ex);
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="row" style="gap:10px;">
+          <div style="flex:1;">
+            <div class="t">${idx+1}. ${it.ex}</div>
+            <div class="m">Last wt: ${stats.last ?? "—"} • Best: ${stats.best ?? "—"}</div>
+          </div>
+          <input type="checkbox" ${it.done ? "checked" : ""} data-ex="${it.ex}" class="check" />
+        </div>
+        <div class="v">
+          <button class="btn" data-jump="${it.ex}" style="width:100%; margin-top:8px;">Log this now</button>
+        </div>
+      `;
+      wrap.appendChild(div);
+    });
+
+    // bind toggles
+    wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener("change", (e) => {
+        const ex = e.target.getAttribute("data-ex");
+        const item = activeWorkout.items.find(x => x.ex === ex);
+        if (item) item.done = e.target.checked;
+        saveJSON(KEY.activeWorkout, activeWorkout);
+      });
+    });
+
+    // bind jump-to-log
+    wrap.querySelectorAll('button[data-jump]').forEach(btn => {
+      btn.addEventListener("click", () => {
+        const ex = btn.getAttribute("data-jump");
+        $("groupSelect").value = activeWorkout.group;
+        fillExercises(activeWorkout.group);
+        $("exerciseSelect").value = ex;
+        showWeightStats(ex);
+        show("log");
+        toast("⚔️ Logging for: " + ex);
+      });
+    });
+  }
+
+  function renderHiddenList(){
+    const list = $("hiddenList");
+    const count = $("hiddenCount");
+    if (!list || !count) return;
+
+    const arr = [...banned].sort();
+    count.textContent = `${arr.length} hidden`;
+    list.innerHTML = "";
+    if (arr.length === 0){
+      list.innerHTML = `<div class="muted">None hidden.</div>`;
+      return;
+    }
+
+    arr.slice(0, 30).forEach(ex => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="t">${ex}</div>
+        <div class="v"><button class="btn" data-unhide="${ex}" style="width:100%;">Unhide</button></div>
+      `;
+      list.appendChild(div);
+    });
+
+    list.querySelectorAll("button[data-unhide]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const ex = btn.getAttribute("data-unhide");
+        banned.delete(ex);
+        saveJSON(KEY.banned, [...banned]);
+        fillExercises($("groupSelect").value);
+        renderNext();
+        toast("Unhid: " + ex);
+      });
+    });
+  }
+
+  // ---------------- Actions ----------------
   $("addSetBtn").addEventListener("click", () => {
-    const day = $("daySelect").value;
+    const group = $("groupSelect").value;
     const ex = $("exerciseSelect").value;
     const w = Number($("weightInput").value);
     const r = Number($("repsInput").value);
@@ -425,36 +718,52 @@
       id: Date.now() + "_" + Math.random().toString(16).slice(2),
       isoDate: todayISO(),
       date: new Date().toLocaleDateString(),
-      day,
+      group,
       exercise: ex,
       weight: w,
       reps: r,
-      vol: volume(w,r),
       e1rm: e1rm(w,r)
     };
 
     logs.unshift(entry);
     saveJSON(KEY.logs, logs);
 
-    // RPG rewards
-    souls += 60 + Math.min(120, Math.round(entry.vol / 8));
+    souls += 60 + Math.min(120, Math.round((w*r) / 8));
     saveNum(KEY.souls, souls);
 
     updateStreak();
-    toast("🔥 Set logged. Souls claimed.");
+    toast("🔥 Set logged. Start weight saved.");
 
-    $("weightInput").value = "";
     $("repsInput").value = "";
-
-    fillExercises(day);
     renderRecent();
     renderHUD();
+    showWeightStats(ex);
+  });
+
+  // Hide / Unhide
+  $("banBtn").addEventListener("click", () => {
+    const ex = $("exerciseSelect").value;
+    if (!ex){ toast("Pick an exercise first."); return; }
+    banned.add(ex);
+    saveJSON(KEY.banned, [...banned]);
+    fillExercises($("groupSelect").value);
+    $("exerciseSelect").value = "";
+    $("lastWeightPill").textContent = "Last: —";
+    $("bestWeightPill").textContent = "Best: —";
+    toast("Hidden: " + ex);
+  });
+
+  $("unbanBtn").addEventListener("click", () => {
+    banned = new Set();
+    saveJSON(KEY.banned, []);
+    fillExercises($("groupSelect").value);
+    toast("All exercises unhidden.");
   });
 
   $("recoveryBtn").addEventListener("click", () => {
     souls += 25;
     saveNum(KEY.souls, souls);
-    toast("🛡️ Recovery ritual complete (+Souls).");
+    toast("🛡️ Recovery ritual logged. Protect the flame.");
     renderHUD();
   });
 
@@ -471,25 +780,62 @@
     renderHUD();
   });
 
+  // Next Up & sessions
+  $("genNextBtn").addEventListener("click", () => renderNext());
+
+  $("startWorkoutBtn").addEventListener("click", () => {
+    const group = $("nextGroupSelect").value;
+    const picks = generateNext(group).map(p => p.ex);
+    activeWorkout = { group, createdIso: todayISO(), items: picks.map(ex => ({ ex, done:false })) };
+    saveJSON(KEY.activeWorkout, activeWorkout);
+
+    // Save session plan (for smarter future suggestions)
+    sessions.unshift({ iso: todayISO(), group, items: picks });
+    sessions = sessions.slice(0, 50);
+    saveJSON(KEY.sessions, sessions);
+
+    renderActiveWorkout();
+    toast("🔥 Workout started: " + group);
+  });
+
+  $("finishWorkoutBtn").addEventListener("click", () => {
+    if (!activeWorkout){ toast("No active workout."); return; }
+    activeWorkout = null;
+    saveJSON(KEY.activeWorkout, null);
+    renderActiveWorkout();
+    toast("🏁 Workout finished. Rest at the bonfire.");
+  });
+
+  $("cancelWorkoutBtn").addEventListener("click", () => {
+    activeWorkout = null;
+    saveJSON(KEY.activeWorkout, null);
+    renderActiveWorkout();
+    toast("Canceled.");
+  });
+
   $("clearBtn").addEventListener("click", () => {
-    if (!confirm("This clears ALL sets, bodyweight, Souls, streaks. Are you sure?")) return;
+    if (!confirm("This clears ALL sets, bodyweight, Souls, streaks, bans, sessions. Are you sure?")) return;
     logs = []; bws = []; souls = 0; streak = 0; bestStreak = 0; lastTrain = "";
+    banned = new Set(); activeWorkout = null; sessions = [];
     saveJSON(KEY.logs, logs);
     saveJSON(KEY.bw, bws);
     saveNum(KEY.souls, souls);
     saveNum(KEY.streak, streak);
     saveNum(KEY.best, bestStreak);
     localStorage.setItem(KEY.last, "");
-    toast("🧹 Cleared. You can restart the run anytime.");
-    fillExercises($("daySelect").value);
-    renderRecent();
-    renderBW();
-    renderHUD();
+    saveJSON(KEY.banned, []);
+    saveJSON(KEY.activeWorkout, null);
+    saveJSON(KEY.sessions, []);
+    toast("🧹 Cleared. Restart anytime.");
+    fillExercises($("groupSelect").value);
+    renderRecent(); renderBW(); renderHUD(); renderNext(); renderActiveWorkout(); renderHiddenList();
+    $("lastWeightPill").textContent = "Last: —";
+    $("bestWeightPill").textContent = "Best: —";
   });
 
   // Export/Import
   $("exportBtn").addEventListener("click", () => {
-    const payload = { logs, bws, souls, streak, bestStreak, lastTrain, exportedAt: new Date().toISOString() };
+    const payload = { logs, bws, souls, streak, bestStreak, lastTrain, banned:[...banned], activeWorkout, sessions, exportedAt: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -513,17 +859,23 @@
         streak = Number(data.streak || 0);
         bestStreak = Number(data.bestStreak || 0);
         lastTrain = String(data.lastTrain || "");
+        banned = new Set(Array.isArray(data.banned) ? data.banned : []);
+        activeWorkout = data.activeWorkout || null;
+        sessions = Array.isArray(data.sessions) ? data.sessions : [];
+
         saveJSON(KEY.logs, logs);
         saveJSON(KEY.bw, bws);
         saveNum(KEY.souls, souls);
         saveNum(KEY.streak, streak);
         saveNum(KEY.best, bestStreak);
         localStorage.setItem(KEY.last, lastTrain);
-        toast("🗝️ Save restored at the bonfire.");
-        fillExercises($("daySelect").value);
-        renderRecent();
-        renderBW();
-        renderHUD();
+        saveJSON(KEY.banned, [...banned]);
+        saveJSON(KEY.activeWorkout, activeWorkout);
+        saveJSON(KEY.sessions, sessions);
+
+        toast("🗝️ Save restored.");
+        fillExercises($("groupSelect").value);
+        renderRecent(); renderBW(); renderHUD(); renderNext(); renderActiveWorkout(); renderHiddenList();
       } catch {
         toast("⚠️ Could not import that file.");
       }
@@ -535,11 +887,13 @@
   // Tabs
   function show(tab){
     $("viewLog").style.display = tab==="log" ? "block" : "none";
+    $("viewNext").style.display = tab==="next" ? "block" : "none";
     $("viewProgress").style.display = tab==="progress" ? "block" : "none";
     $("viewBody").style.display = tab==="body" ? "block" : "none";
     $("viewSave").style.display = tab==="save" ? "block" : "none";
 
     $("tabLog").className = "btn" + (tab==="log" ? " primary":"");
+    $("tabNext").className = "btn" + (tab==="next" ? " primary":"");
     $("tabProgress").className = "btn" + (tab==="progress" ? " primary":"");
     $("tabBody").className = "btn" + (tab==="body" ? " primary":"");
     $("tabSave").className = "btn" + (tab==="save" ? " primary":"");
@@ -551,24 +905,50 @@
         renderChart(ex);
       }
     }
+    if (tab==="next"){
+      renderNext();
+      renderActiveWorkout();
+    }
+    if (tab==="save"){
+      renderHiddenList();
+    }
   }
 
   $("tabLog").addEventListener("click", ()=>show("log"));
+  $("tabNext").addEventListener("click", ()=>show("next"));
   $("tabProgress").addEventListener("click", ()=>show("progress"));
   $("tabBody").addEventListener("click", ()=>show("body"));
   $("tabSave").addEventListener("click", ()=>show("save"));
 
-  $("daySelect").addEventListener("change", (e) => fillExercises(e.target.value));
+  $("groupSelect").addEventListener("change", (e) => {
+    fillExercises(e.target.value);
+    $("weightInput").value = "";
+    $("repsInput").value = "";
+    $("lastWeightPill").textContent = "Last: —";
+    $("bestWeightPill").textContent = "Best: —";
+  });
+
+  $("exerciseSelect").addEventListener("change", (e) => {
+    const ex = e.target.value;
+    if (!ex) return;
+    showWeightStats(ex);
+  });
+
   $("progressExercise").addEventListener("change", (e) => {
     const ex = e.target.value;
     if (ex) renderChart(ex);
   });
 
+  $("nextGroupSelect").addEventListener("change", () => renderNext());
+  $("neckSafeToggle").addEventListener("change", () => renderNext());
+
   // Init
-  fillExercises($("daySelect").value);
+  fillExercises($("groupSelect").value);
   renderRecent();
   renderBW();
   renderHUD();
+  renderNext();
+  renderActiveWorkout();
   show("log");
 </script>
 </body>
